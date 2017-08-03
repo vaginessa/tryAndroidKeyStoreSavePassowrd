@@ -12,18 +12,21 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.security.auth.x500.X500Principal;
 
@@ -165,6 +168,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private String decryptTheString(String encryptedString) {
+        try {
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(Constants.ALIAS, null);
+            RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
+
+            Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+            output.init(Cipher.DECRYPT_MODE, privateKey);
+
+            String cipherText = encryptedString;
+            CipherInputStream cipherInputStream = new CipherInputStream(
+                    new ByteArrayInputStream(Base64.decode(cipherText, Base64.DEFAULT)), output);
+            ArrayList<Byte> values = new ArrayList<>();
+            int nextByte;
+            while ((nextByte = cipherInputStream.read()) != -1) {
+                values.add((byte) nextByte);
+            }
+
+            byte[] bytes = new byte[values.size()];
+            for (int i = 0; i < bytes.length; i++) {
+                bytes[i] = values.get(i).byteValue();
+            }
+
+            String decryptedString = new String(bytes, 0, bytes.length, "UTF-8");
+            return decryptedString;
+
+        } catch (Exception e) {
+            return "";
+        }
+
+    }
+
     private void saveTheEncryptedPassword(String encryptedPassword) {
         SharedPreferences.Editor editor = getSharedPreferences("share", MODE_PRIVATE).edit();
 //SharedPreferences.Editor editor=getPreferences(MODE_PRIVATE).edit();
@@ -217,6 +251,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.bt_show_password:
                 String encrypgtedPassword = getTheEncryptedPassword();
                 tvEncryptPassword.setText(encrypgtedPassword);
+
+                String decryptedPassword = decryptTheString(encrypgtedPassword);
+                tvDePassword.setText(decryptedPassword);
                 break;
         }
 
