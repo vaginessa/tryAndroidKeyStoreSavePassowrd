@@ -1,26 +1,30 @@
 package com.roy.tryandroidkeystore;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.security.KeyPairGeneratorSpec;
-import android.support.annotation.BoolRes;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
 import javax.security.auth.x500.X500Principal;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -30,6 +34,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tvShowKey;
     private Button btShow;
     private KeyStore keyStore;
+    private TextView tvEncryptPassword;
+    private TextView tvDePassword;
+    private Button btShowPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +47,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btSave = (Button) findViewById(R.id.bt_save);
         tvShowKey = (TextView) findViewById(R.id.tv_show_key);
         btShow = (Button) findViewById(R.id.bt_show);
+        tvEncryptPassword = (TextView) findViewById(R.id.tv_encrypt_password);
+        tvDePassword = (TextView) findViewById(R.id.tv_de_password);
+        btShowPassword = (Button) findViewById(R.id.bt_show_password);
 
         btSave.setOnClickListener(this);
         btShow.setOnClickListener(this);
+        btShowPassword.setOnClickListener(this);
 
         try {
             keyStore = KeyStore.getInstance(Constants.KEY_STORE_NAME);
@@ -77,16 +88,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new AsyncTask<String, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(String... strings) {
-                String alias = strings[0];
+                String key = strings[0];
                 try {
                     // Create new key if needed
 
-                    if (!keyStore.containsAlias(alias)) {
+                    if (!keyStore.containsAlias(Constants.ALIAS)) {
                         Calendar start = Calendar.getInstance();
                         Calendar end = Calendar.getInstance();
                         end.add(Calendar.YEAR, 99);
                         KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(MainActivity.this)
-                                .setAlias(alias)
+                                .setAlias(Constants.ALIAS)
                                 .setSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
                                 .setSerialNumber(BigInteger.ONE)
                                 .setStartDate(start.getTime())
@@ -96,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         generator.initialize(spec);
 
                         KeyPair keyPair = generator.generateKeyPair();
+
 
                         return true;
                     }
@@ -111,13 +123,63 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             protected void onPostExecute(Boolean success) {
                 super.onPostExecute(success);
                 if (success) {
-                    Toast.makeText(MainActivity.this, "Saved success", Toast.LENGTH_LONG).show();
+                    String encryptedPassword = encryptString(etKeyInput.getText().toString());
+                    saveTheEncryptedPassword(encryptedPassword);
                 } else {
                     Toast.makeText(MainActivity.this, "Saved error", Toast.LENGTH_LONG).show();
                 }
 
             }
         }.execute(key);
+
+
+    }
+
+    private String encryptString(String theStringtoEncrypt) {
+        try {
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(Constants.ALIAS, null);
+            RSAPublicKey publicKey = (RSAPublicKey) privateKeyEntry.getCertificate().getPublicKey();
+
+            // Encrypt the text
+            String initialText = theStringtoEncrypt;
+            if (initialText.isEmpty()) {
+                Toast.makeText(this, "Enter text in the 'Initial Text' widget", Toast.LENGTH_LONG).show();
+                return "";
+            }
+
+            Cipher input = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+            input.init(Cipher.ENCRYPT_MODE, publicKey);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            CipherOutputStream cipherOutputStream = new CipherOutputStream(
+                    outputStream, input);
+            cipherOutputStream.write(initialText.getBytes("UTF-8"));
+            cipherOutputStream.close();
+
+            byte[] vals = outputStream.toByteArray();
+            String encryptedString = Base64.encodeToString(vals, Base64.DEFAULT);
+            return encryptedString;
+        } catch (Exception e) {
+            Toast.makeText(this, "Exception " + e.getMessage() + " occured", Toast.LENGTH_LONG).show();
+            return "";
+        }
+    }
+
+    private void saveTheEncryptedPassword(String encryptedPassword) {
+        SharedPreferences.Editor editor = getSharedPreferences("share", MODE_PRIVATE).edit();
+//SharedPreferences.Editor editor=getPreferences(MODE_PRIVATE).edit();
+//SharedPreferences.Editor editor= PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
+        editor.putString("password", encryptedPassword);
+        editor.commit();
+
+
+    }
+
+    private String getTheEncryptedPassword() {
+        SharedPreferences sp = getSharedPreferences("share", MODE_PRIVATE);
+//SharedPreferences.Editor editor=getPreferences(MODE_PRIVATE).edit();
+//SharedPreferences.Editor editor= PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
+        return sp.getString("password", "");
 
 
     }
@@ -151,9 +213,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                 break;
+
+            case R.id.bt_show_password:
+                String encrypgtedPassword = getTheEncryptedPassword();
+                tvEncryptPassword.setText(encrypgtedPassword);
+                break;
         }
 
     }
+
 }
 
 

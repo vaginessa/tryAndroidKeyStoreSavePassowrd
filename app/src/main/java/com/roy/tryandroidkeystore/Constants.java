@@ -6,4 +6,6 @@ package com.roy.tryandroidkeystore;
 
 public class Constants {
     static String KEY_STORE_NAME = "AndroidKeyStore";
+    static String ALIAS = "alias";
+    static String SP_PASSWORD_KEY = "SP_PASSWORD_KEY";
 }
