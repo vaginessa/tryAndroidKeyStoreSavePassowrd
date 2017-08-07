@@ -30,6 +30,8 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.security.auth.x500.X500Principal;
 
+import static com.roy.tryandroidkeystore.Constants.SP_NAME;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private EditText etKeyInput;
@@ -200,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void saveTheEncryptedPassword(String encryptedPassword) {
-        SharedPreferences.Editor editor = getSharedPreferences("share", MODE_PRIVATE).edit();
+        SharedPreferences.Editor editor = getSharedPreferences(SP_NAME, MODE_PRIVATE).edit();
 //SharedPreferences.Editor editor=getPreferences(MODE_PRIVATE).edit();
 //SharedPreferences.Editor editor= PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
         editor.putString("password", encryptedPassword);
@@ -210,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private String getTheEncryptedPassword() {
-        SharedPreferences sp = getSharedPreferences("share", MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences(SP_NAME, MODE_PRIVATE);
 //SharedPreferences.Editor editor=getPreferences(MODE_PRIVATE).edit();
 //SharedPreferences.Editor editor= PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
         return sp.getString("password", "");

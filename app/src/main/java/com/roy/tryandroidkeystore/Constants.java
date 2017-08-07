@@ -8,4 +8,5 @@ public class Constants {
     static String KEY_STORE_NAME = "AndroidKeyStore";
     static String ALIAS = "alias";
     static String SP_PASSWORD_KEY = "SP_PASSWORD_KEY";
+    static String SP_NAME = "SP_NAME_SHARE";
 }
