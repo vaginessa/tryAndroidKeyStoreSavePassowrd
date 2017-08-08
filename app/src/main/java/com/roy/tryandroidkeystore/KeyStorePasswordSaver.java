@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.security.KeyPairGeneratorSpec;
 import android.util.Base64;
-import android.widget.Toast;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,8 +12,8 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -111,8 +110,9 @@ public class KeyStorePasswordSaver {
 
     private static String encryptString(String theStringtoEncrypt) {
         try {
-            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(Constants.ALIAS, null);
-            RSAPublicKey publicKey = (RSAPublicKey) privateKeyEntry.getCertificate().getPublicKey();
+            KeyStore.Entry entry = keyStore.getEntry(Constants.ALIAS, null);
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
+            PublicKey publicKey = privateKeyEntry.getCertificate().getPublicKey();
 
             // Encrypt the text
             String initialText = theStringtoEncrypt;
@@ -120,7 +120,7 @@ public class KeyStorePasswordSaver {
                 return "";
             }
 
-            Cipher input = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+            Cipher input = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             input.init(Cipher.ENCRYPT_MODE, publicKey);
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -168,10 +168,11 @@ public class KeyStorePasswordSaver {
 
     private static String decryptTheString(String encryptedString) {
         try {
-            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(Constants.ALIAS, null);
-            RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
+            KeyStore.Entry entry = keyStore.getEntry(Constants.ALIAS, null);
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
+            PrivateKey privateKey = privateKeyEntry.getPrivateKey();
 
-            Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+            Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             output.init(Cipher.DECRYPT_MODE, privateKey);
 
             String cipherText = encryptedString;
