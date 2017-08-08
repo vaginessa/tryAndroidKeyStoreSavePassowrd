@@ -146,7 +146,7 @@ public class KeyStorePasswordSaver {
 //SharedPreferences.Editor editor=getPreferences(MODE_PRIVATE).edit();
 //SharedPreferences.Editor editor= PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
             editor.putString(passwordName, encryptedPassword);
-            editor.commit();
+            editor.apply();
             listener.success(true);
         } catch (Exception e) {
             listener.success(false);
@@ -158,9 +158,10 @@ public class KeyStorePasswordSaver {
 
     private static String getTheEncryptedPassword(Context context, String passwordName) {
         SharedPreferences sp = context.getSharedPreferences(SP_NAME, MODE_PRIVATE);
+        String result = sp.getString(passwordName, "");
 //SharedPreferences.Editor editor=getPreferences(MODE_PRIVATE).edit();
 //SharedPreferences.Editor editor= PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
-        return sp.getString(passwordName, "");
+        return result;
 
 
     }
