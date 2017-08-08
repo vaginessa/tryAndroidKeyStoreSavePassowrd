@@ -1,36 +1,14 @@
 package com.roy.tryandroidkeystore;
 
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.security.KeyPairGeneratorSpec;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Enumeration;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import javax.security.auth.x500.X500Principal;
-
-import static com.roy.tryandroidkeystore.Constants.SP_NAME;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -61,12 +39,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btShow.setOnClickListener(this);
         btShowPassword.setOnClickListener(this);
 
-        try {
-            keyStore = KeyStore.getInstance(Constants.KEY_STORE_NAME);
-            keyStore.load(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
 
     }

@@ -31,13 +31,15 @@ import static com.roy.tryandroidkeystore.Constants.SP_NAME;
 
 public class KeyStorePasswordSaver {
 
+    private static String ALIAS = "alias";
+    private static String KEY_STORE_NAME = "AndroidKeyStore";
     private static KeyStore keyStore;
 
     public static void saveThePassword(Context context, String passwordName, String password, SaveSuccessListener listener) {
 
         if (keyStore == null) {
             try {
-                keyStore = KeyStore.getInstance(Constants.KEY_STORE_NAME);
+                keyStore = KeyStore.getInstance(KEY_STORE_NAME);
                 keyStore.load(null);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -54,12 +56,12 @@ public class KeyStorePasswordSaver {
                 try {
                     // Create new key if needed
 
-                    if (!keyStore.containsAlias(Constants.ALIAS)) {
+                    if (!keyStore.containsAlias(ALIAS)) {
                         Calendar start = Calendar.getInstance();
                         Calendar end = Calendar.getInstance();
                         end.add(Calendar.YEAR, 99);
                         KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
-                                .setAlias(Constants.ALIAS)
+                                .setAlias(ALIAS)
                                 .setSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
                                 .setSerialNumber(BigInteger.ONE)
                                 .setStartDate(start.getTime())
@@ -110,7 +112,7 @@ public class KeyStorePasswordSaver {
 
     private static String encryptString(String theStringtoEncrypt) {
         try {
-            KeyStore.Entry entry = keyStore.getEntry(Constants.ALIAS, null);
+            KeyStore.Entry entry = keyStore.getEntry(ALIAS, null);
             KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
             PublicKey publicKey = privateKeyEntry.getCertificate().getPublicKey();
 
@@ -168,7 +170,7 @@ public class KeyStorePasswordSaver {
 
     private static String decryptTheString(String encryptedString) {
         try {
-            KeyStore.Entry entry = keyStore.getEntry(Constants.ALIAS, null);
+            KeyStore.Entry entry = keyStore.getEntry(ALIAS, null);
             KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
             PrivateKey privateKey = privateKeyEntry.getPrivateKey();
 
